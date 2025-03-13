@@ -2,7 +2,6 @@ package shop
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -25,7 +24,7 @@ type StorageTestSuite struct {
 func (suite *StorageTestSuite) SetupSuite() {
 	suite.ctx = context.Background()
 	mongoContainer, err := mongodb.Run(suite.ctx, "mongo:6")
-	
+
 	suite.Require().NoError(err)
 
 	suite.mongoContainer = mongoContainer
@@ -37,7 +36,6 @@ func (suite *StorageTestSuite) SetupSuite() {
 	suite.Require().NoError(err)
 
 	suite.client = client
-
 
 	suite.storage = NewMongoStorage(client.Database("first-app").Collection("shops"))
 
@@ -59,6 +57,45 @@ func (suite *StorageTestSuite) TearDownSuite() {
 
 }
 
+func (suite *StorageTestSuite) TestGetShopById_Succes() {
+	expected := suite.shop
+	actual, err := suite.storage.GetShopById(suite.ctx, suite.shop.Id)
+	suite.Require().NoError(err)
+	suite.Require().Equal(expected, actual)
+}
+
+func (suite *StorageTestSuite) TestGetShopById_NotFound() {
+	suite.shop.Id = ""
+	res, err := suite.storage.GetShopById(suite.ctx, suite.shop.Id)
+	suite.Require().Error(err)
+	suite.Require().Equal(res, Shop{})
+
+}
+
+func (suite *StorageTestSuite) TestGetShops() {
+	newshop := Shop{Version: 2, Name: "name2", Location: "location2", Description: "description2"}
+
+	err := suite.storage.InsertShop(suite.ctx, newshop)
+	suite.Require().NoError(err)
+
+	shops, err := suite.storage.GetAllShops(suite.ctx)
+	suite.Require().Equal(2, len(shops))
+	suite.Require().NoError(err)
+
+}
+
+func (suite *StorageTestSuite) TestInsertShop() {
+	newShop := Shop{Id: "2", Version: 1, Name: "some name", Location: "fjvdknv", Description: "dddfk"}
+
+	err := suite.storage.InsertShop(suite.ctx, newShop)
+	suite.Require().NoError(err)
+
+	insertedShop, err := suite.storage.GetShopById(suite.ctx, newShop.Id)
+	suite.Require().Equal(insertedShop, newShop)
+	suite.Require().NoError(err)
+
+}
+
 func (suite *StorageTestSuite) TestUpdateShop() {
 	test := Shop{Name: "testshop", Version: 2, Location: "arona", Description: "some test descritpion"}
 
@@ -73,47 +110,22 @@ func (suite *StorageTestSuite) TestUpdateShop() {
 	suite.Require().Equal(updatedShop.Description, test.Description)
 }
 
-func (suite *StorageTestSuite) TestGetShopById_Succes() {
-	expected, err := suite.storage.GetShopById(suite.ctx, suite.shop.Id)
-	suite.Require().NoError(err)
-	suite.Require().Equal(expected, suite.shop)
+func (suite *StorageTestSuite) TestUpdateShop_No_File() {
+	test := Shop{Name: "testshop", Version: 2, Location: "arona", Description: "some test descritpion"}
+	invalidId := ""
+
+	err := suite.storage.UpdateShop(suite.ctx, invalidId, test)
+	suite.Require().Error(err)
 }
 
-func (suite *StorageTestSuite) TestGetShopById_NotFound() {
-	suite.shop.Id = "jb5873vf"
-	res, _ := suite.storage.GetShopById(suite.ctx, suite.shop.Id)
-	suite.Require().Equal(res, Shop{})
+func (suite *StorageTestSuite) TestDeleteShop() {
+	shopToDelete := suite.shop
 
-}
-
-func (suite *StorageTestSuite) TestGetShops() {
-	newshop := Shop{Version: 2, Name: "name2", Location: "location2", Description: "description2"}
-
-	err := suite.storage.InsertShop(suite.ctx, newshop)
-	fmt.Println("id", newshop.Id)
+	err := suite.storage.DeleteShop(suite.ctx, shopToDelete)
 	suite.Require().NoError(err)
 
-	shops, err := suite.storage.GetAllShops(suite.ctx)
-	fmt.Println(shops)
-	suite.Require().NoError(err)
-
-}
-
-func (suite *StorageTestSuite) TestInsertShop() {
-	newShop := Shop{Version: 1, Name: "some na", Location: "fjvdknv", Description: "dddfk"}
-
-	err := suite.storage.InsertShop(suite.ctx, newShop)
-	suite.Require().NoError(err)
-
-	insertedShop, err := suite.storage.GetShopById(suite.ctx, newShop.Id)
-	suite.Require().NoError(err)
-	fmt.Println("inserdet shop :", insertedShop.Id)
-
-}
-func (suite *StorageTestSuite) TestInsertShop_ID_Exist() {
-	testshop := Shop{Version: 1, Name: "some silly shop", Location: "ter", Description: "another silly shop"}
-
-	err := suite.storage.InsertShop(suite.ctx, testshop)
+	result, err := suite.storage.GetShopById(suite.ctx, shopToDelete.Id)
+	suite.Require().Equal(Shop{},result)
 	suite.Require().Error(err)
 }
 

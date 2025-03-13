@@ -48,7 +48,6 @@ func (ms *MongoStorage) GetAllShops(ctx context.Context) ([]Shop, error) {
 
 func convertCursor(cursor *mongo.Cursor, ctx context.Context) ([]Shop, error) {
 	shops := make([]Shop, 0)
-	// use make
 
 	for cursor.Next(ctx) {
 		var shop Shop
@@ -65,15 +64,14 @@ func convertCursor(cursor *mongo.Cursor, ctx context.Context) ([]Shop, error) {
 
 func (ms *MongoStorage) InsertShop(ctx context.Context, shop Shop) error {
 
-	res, err := ms.collection.InsertOne(ctx, shop)
-	fmt.Println(res.InsertedID)
+	_, err := ms.collection.InsertOne(ctx, shop)
+
 	if err != nil {
 		return fmt.Errorf("insert one %w", err)
 	}
 
 	return nil
 }
-
 
 func (ms *MongoStorage) UpdateShop(ctx context.Context, shopId string, update Shop) error {
 	filter := bson.M{"_id": shopId}
@@ -95,8 +93,12 @@ func (ms *MongoStorage) UpdateShop(ctx context.Context, shopId string, update Sh
 		Location:    update.Location,
 		Description: update.Description,
 	}
-	
-	_, err = ms.collection.ReplaceOne(ctx, filter, newShop)
+
+	result, err := ms.collection.ReplaceOne(ctx, filter, newShop)
+
+	if result.MatchedCount < 1 {
+		return fmt.Errorf("nothing to replace")
+	}
 
 	if err != nil {
 		return fmt.Errorf("update: %w", err)
@@ -106,8 +108,9 @@ func (ms *MongoStorage) UpdateShop(ctx context.Context, shopId string, update Sh
 }
 
 func (ms *MongoStorage) DeleteShop(ctx context.Context, shop Shop) error {
+	filter := bson.M{"_id": shop.Id}
 
-	deleteRes, err := ms.collection.DeleteOne(ctx, shop)
+	deleteRes, err := ms.collection.DeleteOne(ctx, filter)
 	if deleteRes.DeletedCount < 0 {
 		return fmt.Errorf("delete:nothing was deleted")
 	}
