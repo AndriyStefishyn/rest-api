@@ -74,20 +74,6 @@ func (ms *MongoStorage) InsertShop(ctx context.Context, shop Shop) error {
 	return nil
 }
 
-/* func (ms *MongoStorage) exists(ctx context.Context, id string) (bool, error) {
-
-	count, err := ms.collection.CountDocuments(ctx, bson.M{"_id": id})
-	if err != nil {
-		return false, fmt.Errorf("count documents %w", err)
-	}
-
-	if count > 0 {
-		return true, nil
-	} else {
-		return false, fmt.Errorf("shop does not exist")
-	}
-
-} */
 
 func (ms *MongoStorage) UpdateShop(ctx context.Context, shopId string, update Shop) error {
 	filter := bson.M{"_id": shopId}

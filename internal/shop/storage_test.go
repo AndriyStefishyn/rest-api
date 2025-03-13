@@ -13,9 +13,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// remove Global var
-// rename file according to go formate style
-
 type StorageTestSuite struct {
 	suite.Suite
 	ctx            context.Context
@@ -28,7 +25,7 @@ type StorageTestSuite struct {
 func (suite *StorageTestSuite) SetupSuite() {
 	suite.ctx = context.Background()
 	mongoContainer, err := mongodb.Run(suite.ctx, "mongo:6")
-	// TODO suite.Require().NoError()
+	
 	suite.Require().NoError(err)
 
 	suite.mongoContainer = mongoContainer
@@ -40,7 +37,7 @@ func (suite *StorageTestSuite) SetupSuite() {
 	suite.Require().NoError(err)
 
 	suite.client = client
-	// rename test DB name
+
 
 	suite.storage = NewMongoStorage(client.Database("first-app").Collection("shops"))
 
