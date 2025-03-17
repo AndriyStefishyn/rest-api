@@ -3,6 +3,7 @@ package shop
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -22,9 +23,9 @@ type StorageTestSuite struct {
 }
 
 func (suite *StorageTestSuite) SetupSuite() {
-	suite.ctx = context.Background()
-	mongoContainer, err := mongodb.Run(suite.ctx, "mongo:6")
+	suite.ctx, _ = context.WithTimeout(context.Background(), 30*time.Second)
 
+	mongoContainer, err := mongodb.Run(suite.ctx, "mongo:6")
 	suite.Require().NoError(err)
 
 	suite.mongoContainer = mongoContainer
@@ -59,6 +60,7 @@ func (suite *StorageTestSuite) TearDownSuite() {
 
 func (suite *StorageTestSuite) TestGetShopById_Succes() {
 	expected := suite.shop
+
 	actual, err := suite.storage.GetShopById(suite.ctx, suite.shop.Id)
 	suite.Require().NoError(err)
 	suite.Require().Equal(expected, actual)
@@ -66,20 +68,22 @@ func (suite *StorageTestSuite) TestGetShopById_Succes() {
 
 func (suite *StorageTestSuite) TestGetShopById_NotFound() {
 	suite.shop.Id = ""
+
 	res, err := suite.storage.GetShopById(suite.ctx, suite.shop.Id)
 	suite.Require().Error(err)
 	suite.Require().Equal(res, Shop{})
 
 }
 
-func (suite *StorageTestSuite) TestGetShops() {
+func (suite *StorageTestSuite) TestGetAllShops() {
 	newshop := Shop{Version: 2, Name: "name2", Location: "location2", Description: "description2"}
 
 	err := suite.storage.InsertShop(suite.ctx, newshop)
 	suite.Require().NoError(err)
 
-	shops, err := suite.storage.GetAllShops(suite.ctx)
-	suite.Require().Equal(2, len(shops))
+	expected, err := suite.storage.GetAllShops(suite.ctx)
+	suite.Require().Equal(suite.shop, expected[0])
+	suite.Require().Equal(newshop, expected[1])
 	suite.Require().NoError(err)
 
 }
@@ -90,42 +94,49 @@ func (suite *StorageTestSuite) TestInsertShop() {
 	err := suite.storage.InsertShop(suite.ctx, newShop)
 	suite.Require().NoError(err)
 
-	insertedShop, err := suite.storage.GetShopById(suite.ctx, newShop.Id)
-	suite.Require().Equal(insertedShop, newShop)
+	actual, err := suite.storage.GetShopById(suite.ctx, newShop.Id)
+	suite.Require().Equal(newShop, actual)
 	suite.Require().NoError(err)
 
 }
 
 func (suite *StorageTestSuite) TestUpdateShop() {
-	test := Shop{Name: "testshop", Version: 2, Location: "arona", Description: "some test descritpion"}
 
-	err := suite.storage.UpdateShop(suite.ctx, suite.shop.Id, test)
+	update := Shop{Id: suite.shop.Id, Name: "testshop", Version: 2, Location: "arona", Description: "some test descritpion"}
+
+	err := suite.storage.UpdateShop(suite.ctx, update)
 	suite.Require().NoError(err)
 
-	updatedShop, err := suite.storage.GetShopById(suite.ctx, suite.shop.Id)
+	actual, err := suite.storage.GetShopById(suite.ctx, suite.shop.Id)
 	suite.Require().NoError(err)
-	suite.Require().Equal(updatedShop.Name, test.Name)
-	suite.Require().Equal(updatedShop.Version, test.Version)
-	suite.Require().Equal(updatedShop.Location, test.Location)
-	suite.Require().Equal(updatedShop.Description, test.Description)
+	suite.Require().Equal(update.Name, actual.Name)
+	suite.Require().Equal(update.Version, actual.Version)
+	suite.Require().Equal(update.Location, actual.Location)
+	suite.Require().Equal(update.Description, actual.Description)
 }
 
 func (suite *StorageTestSuite) TestUpdateShop_No_File() {
 	test := Shop{Name: "testshop", Version: 2, Location: "arona", Description: "some test descritpion"}
-	invalidId := ""
 
-	err := suite.storage.UpdateShop(suite.ctx, invalidId, test)
+	err := suite.storage.UpdateShop(suite.ctx, test)
 	suite.Require().Error(err)
 }
 
 func (suite *StorageTestSuite) TestDeleteShop() {
-	shopToDelete := suite.shop
+	shopIdToDelete := suite.shop.Id
 
-	err := suite.storage.DeleteShop(suite.ctx, shopToDelete)
+	err := suite.storage.DeleteShopById(suite.ctx, shopIdToDelete)
 	suite.Require().NoError(err)
 
-	result, err := suite.storage.GetShopById(suite.ctx, shopToDelete.Id)
-	suite.Require().Equal(Shop{},result)
+	actual, err := suite.storage.GetShopById(suite.ctx, shopIdToDelete)
+	suite.Require().Equal(Shop{}, actual)
+	suite.Require().Error(err)
+}
+
+func (suite *StorageTestSuite) TestDeleteShop_Failed() {
+	wrongId := "some37845vfe"
+
+	err := suite.storage.DeleteShopById(suite.ctx, wrongId)
 	suite.Require().Error(err)
 }
 
