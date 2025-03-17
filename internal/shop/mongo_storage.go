@@ -73,12 +73,12 @@ func (ms *MongoStorage) InsertShop(ctx context.Context, shop Shop) error {
 	return nil
 }
 
-func (ms *MongoStorage) UpdateShop(ctx context.Context, update Shop) error {
-	result, err := ms.collection.ReplaceOne(ctx, bson.M{"_id": update.Id}, update)
+func (ms *MongoStorage) UpdateShop(ctx context.Context, shop Shop) error {
+	result, err := ms.collection.ReplaceOne(ctx, bson.M{"_id": shop.Id}, shop)
 	if err != nil {
 		return fmt.Errorf("update: %w", err)
 	}
-	
+
 	if result.MatchedCount < 1 {
 		return fmt.Errorf("no documents matched")
 	}
@@ -86,13 +86,13 @@ func (ms *MongoStorage) UpdateShop(ctx context.Context, update Shop) error {
 	return nil
 }
 
-func (ms *MongoStorage) DeleteShopById(ctx context.Context, shopId string) error {
-	deleteRes, err := ms.collection.DeleteOne(ctx, bson.M{"_id": shopId})
+func (ms *MongoStorage) DeleteShopById(ctx context.Context, id string) error {
+	deleteRes, err := ms.collection.DeleteOne(ctx, bson.M{"_id": id})
 	if err != nil {
 		return fmt.Errorf("delete one:%w", err)
 	}
 
-	if deleteRes.DeletedCount < 0 {
+	if deleteRes.DeletedCount < 1 {
 		return fmt.Errorf("delete one:nothing was deleted")
 	}
 
