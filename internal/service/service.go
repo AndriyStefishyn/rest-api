@@ -15,14 +15,18 @@ type Service interface {
 	GetShop(cxt context.Context, id string) (shop.Shop, error)
 }
 
-type MongoService struct {
+type ShopService struct {
 	storage shop.Storage
 }
 
-func (ms *MongoService) CreateShop(ctx context.Context, shop shop.Shop) (string, error) {
-	shop.Id = fmt.Sprintf("%s,%s,%s", shop.Name, uuid.NewString(), shop.Location)
+func NewShopService(storage shop.Storage) *ShopService {
+	return &ShopService{storage: storage}
+}
 
-	err := ms.storage.InsertShop(ctx, shop)
+func (ss *ShopService) CreateShop(ctx context.Context, shop shop.Shop) (string, error) {
+	shop.Id = uuid.NewSHA1(uuid.NameSpaceURL, []byte(shop.Name+shop.Location)).String()
+
+	err := ss.storage.InsertShop(ctx, shop)
 	if err != nil {
 		return "", fmt.Errorf("create shop:%w", err)
 	}
@@ -30,8 +34,8 @@ func (ms *MongoService) CreateShop(ctx context.Context, shop shop.Shop) (string,
 	return shop.Id, nil
 }
 
-func (ms *MongoService) DeleteShop(ctx context.Context, id string) error {
-	err := ms.storage.DeleteShopById(ctx, id)
+func (ss *ShopService) DeleteShop(ctx context.Context, id string) error {
+	err := ss.storage.DeleteShopById(ctx, id)
 	if err != nil {
 		return fmt.Errorf("delete shop :%w", err)
 	}
@@ -39,8 +43,8 @@ func (ms *MongoService) DeleteShop(ctx context.Context, id string) error {
 	return nil
 }
 
-func (ms *MongoService) UpdateShop(ctx context.Context, shop shop.Shop) error {
-	err := ms.storage.UpdateShop(ctx, shop)
+func (ss *ShopService) UpdateShop(ctx context.Context, shop shop.Shop) error {
+	err := ss.storage.UpdateShop(ctx, shop)
 	if err != nil {
 		return fmt.Errorf("update shop:%w", err)
 	}
@@ -48,8 +52,8 @@ func (ms *MongoService) UpdateShop(ctx context.Context, shop shop.Shop) error {
 	return nil
 }
 
-func (ms *MongoService) GetShop(ctx context.Context, id string) (shop.Shop, error) {
-	result, err := ms.storage.GetShopById(ctx, id)
+func (ss *ShopService) GetShop(ctx context.Context, id string) (shop.Shop, error) {
+	result, err := ss.storage.GetShopById(ctx, id)
 	if err != nil {
 		return shop.Shop{}, fmt.Errorf("get shop :%w", err)
 	}
