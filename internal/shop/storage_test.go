@@ -109,10 +109,7 @@ func (suite *StorageTestSuite) TestUpdateShop() {
 
 	actual, err := suite.storage.GetShopById(suite.ctx, suite.shop.Id)
 	suite.Require().NoError(err)
-	suite.Require().Equal(update.Name, actual.Name)
-	suite.Require().Equal(update.Version, actual.Version)
-	suite.Require().Equal(update.Location, actual.Location)
-	suite.Require().Equal(update.Description, actual.Description)
+	suite.Require().Equal(update, actual)
 }
 
 func (suite *StorageTestSuite) TestUpdateShop_No_File() {
@@ -129,8 +126,8 @@ func (suite *StorageTestSuite) TestDeleteShop() {
 	suite.Require().NoError(err)
 
 	actual, err := suite.storage.GetShopById(suite.ctx, shopIdToDelete)
-	suite.Require().Equal(Shop{}, actual)
 	suite.Require().Error(err)
+	suite.Require().Equal(Shop{}, actual)
 }
 
 func (suite *StorageTestSuite) TestDeleteShop_Failed() {

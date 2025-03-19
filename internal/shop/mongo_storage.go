@@ -76,7 +76,7 @@ func (ms *MongoStorage) InsertShop(ctx context.Context, shop Shop) error {
 func (ms *MongoStorage) UpdateShop(ctx context.Context, shop Shop) error {
 	result, err := ms.collection.ReplaceOne(ctx, bson.M{"_id": shop.Id}, shop)
 	if err != nil {
-		return fmt.Errorf("update: %w", err)
+		return fmt.Errorf("replace one: %w", err)
 	}
 
 	if result.MatchedCount < 1 {
