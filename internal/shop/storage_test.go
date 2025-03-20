@@ -46,7 +46,6 @@ func (suite *StorageTestSuite) SetupSuite() {
 
 	err = suite.storage.InsertShop(suite.ctx, suite.shop)
 	suite.Require().NoError(err)
-
 }
 
 func (suite *StorageTestSuite) TearDownSuite() {
@@ -55,7 +54,6 @@ func (suite *StorageTestSuite) TearDownSuite() {
 
 	err = suite.mongoContainer.Terminate(suite.ctx)
 	suite.Require().NoError(err)
-
 }
 
 func (suite *StorageTestSuite) TestGetShopById_Succes() {
@@ -72,7 +70,6 @@ func (suite *StorageTestSuite) TestGetShopById_NotFound() {
 	res, err := suite.storage.GetShopById(suite.ctx, suite.shop.Id)
 	suite.Require().Error(err)
 	suite.Require().Equal(res, Shop{})
-
 }
 
 func (suite *StorageTestSuite) TestGetAllShops() {
@@ -85,7 +82,6 @@ func (suite *StorageTestSuite) TestGetAllShops() {
 	suite.Require().NoError(err)
 	suite.Require().Equal(suite.shop, expected[0])
 	suite.Require().Equal(newshop, expected[1])
-
 }
 
 func (suite *StorageTestSuite) TestInsertShop() {
@@ -97,7 +93,6 @@ func (suite *StorageTestSuite) TestInsertShop() {
 	actual, err := suite.storage.GetShopById(suite.ctx, newShop.Id)
 	suite.Require().NoError(err)
 	suite.Require().Equal(newShop, actual)
-
 }
 
 func (suite *StorageTestSuite) TestUpdateShop() {
