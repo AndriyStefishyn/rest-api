@@ -66,6 +66,15 @@ func (suite *ServiceTestSuite) TestGetShop() {
 	suite.Require().Equal(shop.Shop{}, actual)
 }
 
+func (suite *ServiceTestSuite) TestGetAllShops() {
+	suite.mockStorage.EXPECT().GetAllShops(gomock.Any()).Return([]shop.Shop{}, fmt.Errorf("no shops find"))
+
+	actual, err := suite.service.GetAllShops(suite.ctx)
+	fmt.Println(err)
+	suite.Require().Error(err)
+	suite.Require().Equal([]shop.Shop{}, actual)
+}
+
 func (suite *ServiceTestSuite) TestDeleteShop() {
 	suite.mockStorage.EXPECT().DeleteShopById(gomock.Any(), suite.shop.Id).Return(nil)
 
@@ -79,15 +88,15 @@ func (suite *ServiceTestSuite) TestDeleteShop() {
 }
 
 func (suite *ServiceTestSuite) TestUpdateShop() {
-suite.mockStorage.EXPECT().UpdateShop(gomock.Any(),suite.shop).Return(nil)
+	suite.mockStorage.EXPECT().UpdateShop(gomock.Any(), suite.shop).Return(nil)
 
-err := suite.service.UpdateShop(suite.ctx,suite.shop)
-suite.Require().NoError(err)
+	err := suite.service.UpdateShop(suite.ctx, suite.shop)
+	suite.Require().NoError(err)
 
-suite.mockStorage.EXPECT().UpdateShop(gomock.Any(),shop.Shop{}).Return(fmt.Errorf("update"))
+	suite.mockStorage.EXPECT().UpdateShop(gomock.Any(), shop.Shop{}).Return(fmt.Errorf("update"))
 
-err = suite.service.storage.UpdateShop(suite.ctx,shop.Shop{})
-suite.Require().Error(err)
+	err = suite.service.storage.UpdateShop(suite.ctx, shop.Shop{})
+	suite.Require().Error(err)
 }
 func TestServiceTestSuite(t *testing.T) {
 	suite.Run(t, new(ServiceTestSuite))

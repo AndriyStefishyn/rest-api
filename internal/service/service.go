@@ -13,6 +13,7 @@ type Service interface {
 	DeleteShop(cxt context.Context, id string) error
 	UpdateShop(cxt context.Context, shop shop.Shop) error
 	GetShop(cxt context.Context, id string) (shop.Shop, error)
+	GetAllShops(ctx context.Context) ([]shop.Shop, error)
 }
 
 type ShopService struct {
@@ -58,4 +59,12 @@ func (ss *ShopService) GetShop(ctx context.Context, id string) (shop.Shop, error
 		return shop.Shop{}, fmt.Errorf("get shop :%w", err)
 	}
 	return result, nil
+}
+
+func (ss *ShopService) GetAllShops(ctx context.Context) ([]shop.Shop, error) {
+	shops, err := ss.storage.GetAllShops(ctx)
+	if err != nil {
+		return []shop.Shop{}, fmt.Errorf("get all shops :%w", err)
+	}
+	return shops, nil
 }
