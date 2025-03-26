@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:latest  # Use the latest MongoDB image
+    container_name: mongodb_container
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin  # Default admin username
+      MONGO_INITDB_ROOT_PASSWORD: password  # Default admin password
+    volumes:
+      - mongo_data:/data/db  # Persist data in a volume
+
+volumes:
+  mongo_data:
