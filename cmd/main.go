@@ -33,7 +33,7 @@ func main() {
 	router.HandleFunc("/getshop/{id}", handlers.GetShopByIdHandler).Methods(http.MethodGet)
 	router.HandleFunc("/createshop", handlers.CreateShopHandler).Methods(http.MethodPost)
 	router.HandleFunc("/deleteshop/{id}", handlers.DeleteShopHandler).Methods(http.MethodDelete)
-	router.HandleFunc("/updateshop", handlers.UpdateShopHandler).Methods(http.MethodPatch)
+	router.HandleFunc("/updateshop", handlers.UpdateShopHandler).Methods(http.MethodPut)
 
 	err = http.ListenAndServe(":8080", router)
 	if err != nil {
