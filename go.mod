@@ -5,6 +5,7 @@ go 1.22.3
 require (
 	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0
+	github.com/gorilla/mux v1.8.1
 	github.com/stretchr/testify v1.10.0
 	github.com/testcontainers/testcontainers-go/modules/mongodb v0.35.0
 	go.mongodb.org/mongo-driver v1.17.3
