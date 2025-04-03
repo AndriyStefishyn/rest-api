@@ -53,7 +53,7 @@ func readBody(w http.ResponseWriter, r *http.Request) ([]byte, error) {
 func (sh *ShopHandlers) GetShopsHandler(w http.ResponseWriter, r *http.Request) {
 	shops, err := sh.ShopService.GetAllShops(r.Context())
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -87,6 +87,11 @@ func (sh *ShopHandlers) CreateShopHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	response := fmt.Sprintf("shops was created with id :%s", id)
+	err = json.NewEncoder(w).Encode(id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	w.Write([]byte(response))
 }
@@ -101,7 +106,12 @@ func (sh *ShopHandlers) DeleteShopHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	w.Write([]byte("shop was succefully deleted"))
+	response := fmt.Sprintf("shop with id :%s was successfully deleted", id)
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
 
 func (sh *ShopHandlers) UpdateShopHandler(w http.ResponseWriter, r *http.Request) {
@@ -124,5 +134,9 @@ func (sh *ShopHandlers) UpdateShopHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	w.Write([]byte("shop was succefully updated"))
+	err = json.NewEncoder(w).Encode("shop was successfully updated")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
